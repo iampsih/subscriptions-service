@@ -13,6 +13,13 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
+	echomw "github.com/labstack/echo/v4/middleware"
+	"go.uber.org/zap"
+
+	_ "github.com/iampsih/subscriptions-service/docs"
+	echoSwagger "github.com/swaggo/echo-swagger"
+
+	mymw "github.com/iampsih/subscriptions-service/internal/http/middleware"
 )
 
 func main() {
@@ -39,10 +46,18 @@ func main() {
 
 	e := echo.New()
 
+	log, _ := zap.NewProduction()
+	defer log.Sync()
+
+	e.Use(echomw.RequestID()) // добавляет X-Request-Id
+	e.Use(mymw.RequestLogger(log))
+
 	repo := postgres.NewSubscriptionRepo(pool)
 	h := handlers.NewSubscriptionHandler(repo)
 
 	api.RegisterRoutes(e, h)
+
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	e.GET("/health", func(c echo.Context) error {
 		ctx, cancel := context.WithTimeout(c.Request().Context(), 2*time.Second)
