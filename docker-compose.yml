@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:16
+    container_name: subscriptions_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: subscriptions
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d subscriptions"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+
+  migrate:
+    image: migrate/migrate:v4.17.1
+    container_name: subscriptions_migrate
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/migrations
+    command:
+      [
+        "-path", "/migrations",
+        "-database", "postgres://postgres:postgres@db:5432/subscriptions?sslmode=disable",
+        "up"
+      ]
+    restart: "no"
+
+volumes:
+  db_data:
