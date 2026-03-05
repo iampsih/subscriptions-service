@@ -22,6 +22,10 @@ import (
 	mymw "github.com/iampsih/subscriptions-service/internal/http/middleware"
 )
 
+// @title Subscriptions API
+// @version 1.0
+// @description REST service for subscriptions aggregation
+// @BasePath /api/v1
 func main() {
 	_ = godotenv.Load()
 

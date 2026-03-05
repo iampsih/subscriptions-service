@@ -72,6 +72,16 @@ func writeValidationError(c echo.Context, msg string, field string) error {
 	return c.JSON(http.StatusBadRequest, r)
 }
 
+// Create godoc
+// @Summary Create subscription
+// @Tags subscriptions
+// @Accept json
+// @Produce json
+// @Param body body createSubscriptionRequest true "Subscription"
+// @Success 201 {object} subscriptionResponse
+// @Failure 400 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Router /subscriptions [post]
 func (h *SubscriptionHandler) Create(c echo.Context) error {
 	var req createSubscriptionRequest
 	if err := c.Bind(&req); err != nil {
@@ -140,6 +150,14 @@ func (h *SubscriptionHandler) Create(c echo.Context) error {
 	return c.JSON(http.StatusCreated, resp)
 }
 
+// Get godoc
+// @Summary Get subscription by ID
+// @Tags subscriptions
+// @Produce json
+// @Param id path string true "Subscription ID (UUID)"
+// @Success 200 {object} subscriptionResponse
+// @Failure 404 {object} errorResponse
+// @Router /subscriptions/{id} [get]
 func (h *SubscriptionHandler) Get(c echo.Context) error {
 	id := c.Param("id")
 
@@ -171,6 +189,13 @@ func (h *SubscriptionHandler) Get(c echo.Context) error {
 	return c.JSON(http.StatusOK, resp)
 }
 
+// Delete godoc
+// @Summary Delete subscription by ID
+// @Tags subscriptions
+// @Param id path string true "Subscription ID (UUID)"
+// @Success 204
+// @Failure 404 {object} errorResponse
+// @Router /subscriptions/{id} [delete]
 func (h *SubscriptionHandler) Delete(c echo.Context) error {
 	id := c.Param("id")
 
@@ -185,6 +210,18 @@ func (h *SubscriptionHandler) Delete(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
+// List godoc
+// @Summary List subscriptions
+// @Tags subscriptions
+// @Produce json
+// @Param user_id query string false "Filter by user UUID"
+// @Param service_name query string false "Filter by service name (ILIKE)"
+// @Param limit query int false "Limit (default 20, max 100)"
+// @Param offset query int false "Offset (default 0)"
+// @Success 200 {object} listSubscriptionsResponse
+// @Failure 400 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Router /subscriptions [get]
 func (h *SubscriptionHandler) List(c echo.Context) error {
 	limit := 20
 	offset := 0
@@ -261,15 +298,26 @@ func (h *SubscriptionHandler) List(c echo.Context) error {
 	})
 }
 
+// Update godoc
+// @Summary Update subscription by ID (full replace)
+// @Tags subscriptions
+// @Accept json
+// @Produce json
+// @Param id path string true "Subscription ID (UUID)"
+// @Param body body createSubscriptionRequest true "Subscription"
+// @Success 200 {object} subscriptionResponse
+// @Failure 400 {object} errorResponse
+// @Failure 404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Router /subscriptions/{id} [put]
 func (h *SubscriptionHandler) Update(c echo.Context) error {
 	id := c.Param("id")
 
-	// валидируем id как UUID (чтобы не отдавать странные ошибки от БД)
 	if _, err := uuid.Parse(id); err != nil {
 		return writeValidationError(c, "id must be a valid UUID", "id")
 	}
 
-	var req createSubscriptionRequest // reuse (same fields)
+	var req createSubscriptionRequest 
 	if err := c.Bind(&req); err != nil {
 		return writeValidationError(c, "invalid json body", "")
 	}
@@ -340,6 +388,18 @@ func (h *SubscriptionHandler) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, resp)
 }
 
+// Total godoc
+// @Summary Calculate total cost of subscriptions for period
+// @Tags subscriptions
+// @Produce json
+// @Param from query string true "From month (MM-YYYY)"
+// @Param to query string true "To month (MM-YYYY)"
+// @Param user_id query string false "Filter by user UUID"
+// @Param service_name query string false "Filter by service name (ILIKE)"
+// @Success 200 {object} totalResponse
+// @Failure 400 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Router /subscriptions/total [get]
 func (h *SubscriptionHandler) Total(c echo.Context) error {
 	fromStr := strings.TrimSpace(c.QueryParam("from"))
 	toStr := strings.TrimSpace(c.QueryParam("to"))

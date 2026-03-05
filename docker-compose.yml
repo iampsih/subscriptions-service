@@ -32,5 +32,16 @@ services:
       ]
     restart: "no"
 
+  app:
+    build: .
+    container_name: subscriptions_app
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+
 volumes:
   db_data:

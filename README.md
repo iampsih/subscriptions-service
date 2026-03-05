@@ -1,51 +1,65 @@
-# Subscriptions Service
+# Subscriptions Service (Effective Mobile test task)
 
-REST service for aggregating user subscription data.
+REST service for aggregating user online subscriptions.
+
+## Features
+
+- CRUDL for subscriptions
+- Total cost calculation for a selected period (month granularity)
+- PostgreSQL + migrations
+- Structured logs + request id
+- Swagger UI
+- Run with docker compose
 
 ## Tech stack
 
 - Go
-- Echo
+- Echo (v4)
 - PostgreSQL
-- pgx
-- docker-compose
-- golang-migrate
-- Swagger (to be added)
+- pgxpool
+- golang-migrate (migrate/migrate)
+- swaggo (Swagger)
 
-## Run project
+## Data model
 
-Start database:
+Subscription:
+- `service_name` (string)
+- `price` (int, RUB/month)
+- `user_id` (UUID)
+- `start_date` (`MM-YYYY`)
+- `end_date` (`MM-YYYY`, optional)
 
-docker compose up -d
+Month values are stored in DB as `DATE` with the first day of month (`YYYY-MM-01`).
 
+## Run (docker)
 
-Run migrations:
+Create `.env` (you can copy from `.env.example`):
+```bash
+cp .env.example .env
 
+Start:
 
-docker compose up migrate
+docker compose up --build
+Endpoints
 
+Base path: /api/v1
 
-Run service:
+POST /subscriptions
 
+GET /subscriptions/{id}
 
-go run ./cmd/app
+PUT /subscriptions/{id}
 
+DELETE /subscriptions/{id}
 
-Health check:
+GET /subscriptions (list, filters + pagination)
 
+GET /subscriptions/total (sum for period)
 
-curl http://localhost:8080/health
+Health:
 
+GET /health
 
-## Create subscription
+Swagger:
 
-
-curl -X POST http://localhost:8080/api/v1/subscriptions
-
--H "Content-Type: application/json"
--d '{
-"service_name":"Yandex Plus",
-"price":400,
-"user_id":"60601fee-2bf1-4721-ae6f-7636e79a0cba",
-"start_date":"07-2025"
-}'
+GET /swagger/index.html
